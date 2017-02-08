@@ -50,9 +50,22 @@ def learn_param(data_train):
         calc_prob(transition_prob)
         calc_prob(emission_prob)
 
-def main():
-    learn_param(data_train)
-    for x in emission_prob :
-        print(x , emission_prob[x])
+def viterbi(sentence, trans_prob, emission_prob):
+    words = sentence.split()
+    words[-1] = words[-1][:-1]
+    words.append(".")
+    V=[{}]
+    for state in list_tag :
+        V[0][state] = {transition_prob["<s>"][state] * emission_prob[state][words[0]] : None}
+    for i in range(1, len(words)) :
+        V.append({})
+        for state in list_tag:
+            max_tp = max(V[i-1][])
+    print(words)
 
+def main():
+    #learn_param(data_train)
+    #for x in emission_prob :
+    #    print(x , emission_prob[x])
+    viterbi("Saya suka kamu.",1,1)
 main()
