@@ -16,9 +16,11 @@ def calc_prob(prob) :
     for tag in prob :
         total = 0
         for value in prob[tag] :
-            total += prob[tag][value]
+            if prob[tag][value] != 0 :
+                total += prob[tag][value]
         for value in prob[tag] :
-            prob[tag][value] = prob[tag][value] / total
+            if prob[tag][value] != 0 :
+                prob[tag][value] = prob[tag][value] / total
 
 def learn_param(data_train):
     with open(data_train) as data :
@@ -36,13 +38,17 @@ def learn_param(data_train):
                     transition_prob[tag] = {}
                 if not (tag in emission_prob) :
                     emission_prob[tag] = {}
-                if not(tag in transition_prob[backpointer_tag]) :
-                    transition_prob[backpointer_tag][tag] = 1
-                else :
+
+                for x in transition_prob :
+                    if not(tag in transition_prob[x]) :
+                        transition_prob[x][tag] = 0
+                for x in emission_prob :
+                    if not(word in emission_prob[x]) :
+                        emission_prob[x][word] = 0
+
+                if tag in transition_prob[backpointer_tag] :
                     transition_prob[backpointer_tag][tag] += 1
-                if not(word in emission_prob[tag]) :
-                    emission_prob[tag][word] = 1
-                else :
+                if word in emission_prob[tag] :
                     emission_prob[tag][word] += 1
                 backpointer_tag = tag
                 if(backpointer_tag == ".") :
@@ -50,22 +56,27 @@ def learn_param(data_train):
         calc_prob(transition_prob)
         calc_prob(emission_prob)
 
-def viterbi(sentence, trans_prob, emission_prob):
+def viterbi(sentence, transition_prob, emission_prob):
     words = sentence.split()
     words[-1] = words[-1][:-1]
     words.append(".")
     V=[{}]
-    for state in list_tag :
-        V[0][state] = {transition_prob["<s>"][state] * emission_prob[state][words[0]] : None}
-    for i in range(1, len(words)) :
-        V.append({})
-        for state in list_tag:
-            max_tp = max(V[i-1][])
-    print(words)
+    prev_state = "<s>"
+    for state in transition_prob :
+        if not words[0] in emission_prob[state] :
+            ep = "NNP" # jika word tidak terdapat di dalamm daftar tag maka asumsi tag nya adalah NNP (noun
+        else :
+            ep = emission_prob[state]
+        V[0][state] = {"probability" : transition_prob[prev_state][state] * ep[words[0]], "prev" : prev_state}
+    #print(V)
+    #for i in range(1, len(words)) :
+    #    V.append({})
+    #    prev_state = "<s>"
+    #    for state in list_tag:
+    #        max_tp = max(V[i-1][prev_state])
+    #print(words)
 
 def main():
-    #learn_param(data_train)
-    #for x in emission_prob :
-    #    print(x , emission_prob[x])
-    viterbi("Saya suka kamu.",1,1)
+    learn_param(data_train)
+    viterbi("Rockfell International.",transition_prob,emission_prob)
 main()
