@@ -99,6 +99,50 @@ def viterbi(sentence, transition_prob, emission_prob):
     tags.reverse()
     print(tags)
 
+def testing(data_test):
+    with open(data_test) as data_test2:
+        true_positive = 0
+        false_positive = 0
+        false_negative = 0
+        i = 0
+        test_word_list = {0: []}
+        test_tag_list = []
+        viterbi_list = []
+        finished = False
+        while not finished:
+            for line in data_test2:
+                if line != "\n" :
+                    word = line.rsplit(' ',-1)[0] # ngambil word dari line
+                    tag = line.rsplit(' ',-1)[-1] # ngambil tag dari line
+                    tag = tag.replace("\n","")
+                    test_word_list[i].append(word)
+                    test_tag_list[i].append(tag)
+                else:
+                    viterbi_list.append(viterbi(test_word_list))
+                    i+=1
+
+            if not line: #end of file
+                finished = True
+            else:
+                line = line.split()
+                if not tag
+                    print 'Error: files are out of sync.'
+                if len(line) != len(tag)
+                    print 'Error: files are out of sync.'
+                for i in range(len(line)):
+                    true_pair = line[i].split('/')
+                    tag_pair = tag[i].split('/')
+                    if true_pair[0] != tag_pair[0]:
+                        print 'Error: files are out of sync.'
+                    true_tag = true_pair[1]
+                    guess_tag = tag_pair[1]
+                    if true_tag == guess_tag:
+                        true_positive += 1
+                    else:
+                        false_negative += 1
+                        false_positive += 1
+
+
 def main():
     learn_param(data_train)
     viterbi("Rockfell International.", transition_prob, emission_prob)
