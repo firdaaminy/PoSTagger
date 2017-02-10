@@ -2,15 +2,18 @@
 data_train = "pos.train.txt"
 data_test = "pos.test.txt"
 
-list_tag = ["<s>","."]
-list_word = []
+#list_tag = ["<s>","."]
+#list_word = []
 
 transition_prob = {
+    "<s>" : {"<s>" : 0, "." : 0},
+    "." : {"<s>" : 0, "." : 0}
+}
+
+emission_prob = {
     "<s>" : {},
     "." : {}
 }
-
-emission_prob = {}
 
 def calc_prob(prob) :
     for tag in prob :
@@ -30,10 +33,12 @@ def learn_param(data_train):
                 word = datum.rsplit(' ',-1)[0] # ngambil word dari line
                 tag = datum.rsplit(' ',-1)[-1] # ngambil tag dari line
                 tag = tag.replace("\n","")
-                if not (tag in list_tag) :
-                    list_tag.append(tag)
-                if not (word in list_word):
-                    list_word.append(word)
+
+                #if not (tag in list_tag) :
+                #    list_tag.append(tag)
+                #if not (word in list_word):
+                #    list_word.append(word)
+
                 if not (tag in transition_prob) :
                     transition_prob[tag] = {}
                 if not (tag in emission_prob) :
@@ -50,9 +55,11 @@ def learn_param(data_train):
                     transition_prob[backpointer_tag][tag] += 1
                 if word in emission_prob[tag] :
                     emission_prob[tag][word] += 1
+
                 backpointer_tag = tag
                 if(backpointer_tag == ".") :
                     backpointer_tag = "<s>"
+
         calc_prob(transition_prob)
         calc_prob(emission_prob)
 
@@ -60,23 +67,40 @@ def viterbi(sentence, transition_prob, emission_prob):
     words = sentence.split()
     words[-1] = words[-1][:-1]
     words.append(".")
-    V=[{}]
-    prev_state = "<s>"
-    for state in transition_prob :
-        if not words[0] in emission_prob[state] :
-            ep = "NNP" # jika word tidak terdapat di dalamm daftar tag maka asumsi tag nya adalah NNP (noun
-        else :
-            ep = emission_prob[state]
-        V[0][state] = {"probability" : transition_prob[prev_state][state] * ep[words[0]], "prev" : prev_state}
-    #print(V)
-    #for i in range(1, len(words)) :
-    #    V.append({})
-    #    prev_state = "<s>"
-    #    for state in list_tag:
-    #        max_tp = max(V[i-1][prev_state])
-    #print(words)
+
+    best_score = {}
+    best_edge = {}
+    best_score[0]["<s>"] = 0
+    best_edge[0]["<s>"] = None
+    for i in range (0,len(words)):
+        for prev in transition_prob :
+            found = False
+            for next in transition_prob :
+                if prev in best_score[0] and next in transition_prob[prev] :
+                    print(next)
+                    score = 0
+                    if(words[i] in emission_prob[next]) :
+                        score = best_score[0][prev] + transition_prob[prev][next] * emission_prob[next][words[i]]
+                        if best_score[next] > score :
+                            best_score[next] = score
+                            best_edge[next] = prev
+                        found = True
+                if not found :
+                    score = best_score[0][prev] + transition_prob[prev]["NNP"] * 1
+                    if best_score[next] > score :
+                        best_score[next] = score
+                        best_edge[next] = prev
+
+    tags = []
+    next_edge = best_edge["."]
+    while next_edge != "<s>" :
+        tags.append(next_edge)
+        next_edge = best_edge[next_edge]
+    tags.reverse()
+    print(tags)
 
 def main():
     learn_param(data_train)
-    viterbi("Rockfell International.",transition_prob,emission_prob)
+    viterbi("Rockfell International.", transition_prob, emission_prob)
+
 main()
