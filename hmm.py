@@ -64,40 +64,37 @@ def learn_param(data_train):
         calc_prob(emission_prob)
 
 def viterbi(sentence, transition_prob, emission_prob):
-    words = sentence.split()
+    words = sentence.split() #misahin per kata
     words[-1] = words[-1][:-1]
     words.append(".")
-
     best_score = {}
     best_edge = {}
-    best_score[0]["<s>"] = 0
-    best_edge[0]["<s>"] = None
-    for i in range (0,len(words)):
+    best_score[0, "<s>"] = 0.0
+    best_edge[0, "<s>"] = None
+
+    for i in range (0,len(words)-1):
         for prev in transition_prob :
-            found = False
             for next in transition_prob :
-                if prev in best_score[0] and next in transition_prob[prev] :
-                    print(next)
-                    score = 0
-                    if(words[i] in emission_prob[next]) :
-                        score = best_score[0][prev] + transition_prob[prev][next] * emission_prob[next][words[i]]
-                        if best_score[next] > score :
-                            best_score[next] = score
-                            best_edge[next] = prev
-                        found = True
-                if not found :
-                    score = best_score[0][prev] + transition_prob[prev]["NNP"] * 1
-                    if best_score[next] > score :
-                        best_score[next] = score
-                        best_edge[next] = prev
+                if best_score == [i, prev] and transition_prob[prev][next]:
+                    score = transition_prob[prev][next] * emission_prob[next][words[i]]
+                    best_score[i, prev] = score
+                    if best_score[i+1, next] not in best_score or best_score[i+1, next]>score:
+                        best_score[i+1, next] = score
+                        best_edge[i+1, next] = best_score[i, prev]
+                # else:
+                #     score = transition_prob[prev]["NNP"] * 1.0
+                #     if best_score[i+1, next] > score:
+                #         best_score[i+1, next] = score
+                #         best_edge[i+1, next] = prev
 
     tags = []
-    next_edge = best_edge["."]
-    while next_edge != "<s>" :
-        tags.append(next_edge)
+    next_edge = [len(words)-1, "</s>"]
+    while next_edge != [0, "<s>"]:
+        tag = next_edge[1]
+        tags.append(tag)
         next_edge = best_edge[next_edge]
-    tags.reverse()
-    print(tags)
+        # tag = n
+        # next_edge = best_edge[next_edge]
 
 def testing(data_test):
     with open(data_test) as data_test2:
