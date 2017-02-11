@@ -108,39 +108,26 @@ def testing(data_test):
         test_word_list = {0: []}
         test_tag_list = []
         viterbi_list = []
-        finished = False
-        while not finished:
-            for line in data_test2:
-                if line != "\n" :
-                    word = line.rsplit(' ',-1)[0] # ngambil word dari line
-                    tag = line.rsplit(' ',-1)[-1] # ngambil tag dari line
-                    tag = tag.replace("\n","")
-                    test_word_list[i].append(word)
-                    test_tag_list[i].append(tag)
-                else:
-                    viterbi_list.append(viterbi(test_word_list))
-                    i+=1
-
-            if not line: #end of file
-                finished = True
+        for line in data_test2:
+            if line != "\n" :
+                word = line.rsplit(' ',-1)[0] # ngambil word dari line
+                tag = line.rsplit(' ',-1)[-1] # ngambil tag dari line
+                tag = tag.replace("\n","")
+                test_word_list[i].append(word)
+                test_tag_list[i].append(tag)
             else:
-                line = line.split()
-                if not tag
-                    print 'Error: files are out of sync.'
-                if len(line) != len(tag)
-                    print 'Error: files are out of sync.'
-                for i in range(len(line)):
-                    true_pair = line[i].split('/')
-                    tag_pair = tag[i].split('/')
-                    if true_pair[0] != tag_pair[0]:
-                        print 'Error: files are out of sync.'
-                    true_tag = true_pair[1]
-                    guess_tag = tag_pair[1]
-                    if true_tag == guess_tag:
-                        true_positive += 1
-                    else:
-                        false_negative += 1
-                        false_positive += 1
+                viterbi_list.append(viterbi(test_word_list, transition_prob, emission_prob))
+                i+=1
+                test_word_list = []
+        for i in range(0, len(test_tag_list)):
+            if test_tag_list[i] == viterbi_list[i]:
+                true_positive+=1
+            else:
+                false_negative+=1
+                false_positive+=1
+        print('Precision: ',(true_positive/(true_positive+false_positive))*100,' %')
+        print('Recall: ',(true_positive/(true_positive+false_negative))*100,' %')
+        print('Accuracy: ',((true_positive+0)/(true_positive+false_negative+false_negative+0))*100, ' %')
 
 
 def main():
